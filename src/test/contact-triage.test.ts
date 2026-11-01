@@ -19,6 +19,8 @@ describe("support contact triage (local)", () => {
     expect(r).toMatchObject({ ok: true, result: { category: "Support", priority: "Hoog" } });
   });
   it("classifies bugs", () => expect(triageContact("De pagina geeft een foutmelding en laadt niet op mijn telefoon.").category).toBe("Bug"));
+  it("handles typographic apostrophes in urgent login reports", () => expect(triageContact("I can’t log in to my account.")).toMatchObject({ category: "Support", priority: "Hoog" }));
+  it("keeps ordinary longer messages at normal priority", () => expect(triageContact("We zouden graag informatie ontvangen over jullie initiatief en vertellen met plezier meer over ons eigen project.")).toMatchObject({ category: "Algemeen", priority: "Normaal" }));
   it("classifies sales questions", () => expect(triageContact("Wat is de prijs voor een zakelijk abonnement voor ons team?").category).toBe("Sales"));
   it("marks security incidents as urgent", () => {
     const r = triageContact("Mijn account is gehackt en iemand doet zich voor als mij.");

@@ -14,3 +14,6 @@
 - Keep the managed TanStack Start and Cloudflare configuration; MDX catalog plugins are required by the imported documentation.
 - Retain the imported Better Auth cookie-session architecture until explicitly migrated; Cloud connection alone does not configure the original database or external services.
 - Do not apply imported database scripts automatically; they require review against the target service and existing schema.
+- Subdirectories may have their own AGENTS.md; read those rules before changing their files.
+- Bio assistance uses pure browser-safe helpers and updates the Studio draft through its existing callback; only the existing explicit persistence path saves data, so formatting never writes automatically or fabricates translated text.
+- Contact triage remains deterministic behind the existing staff permission boundary; local helpers and tests must not depend on external AI SDKs or provider credentials.
