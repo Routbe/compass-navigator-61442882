@@ -3,6 +3,16 @@ import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/r
 import { renderErrorPage } from "./lib/error-page";
 import { isStrictPath, securityHeaders, sessionCookieProblems } from "./lib/security-headers";
 import { appMode, modeDecision } from "./lib/app-mode";
+import importedAssetPaths from "./lib/imported-asset-paths.json";
+
+const importedAssetsMiddleware = createMiddleware().server(async ({ request, next }) => {
+  const path = new URL(request.url).pathname;
+  const target = (importedAssetPaths as Record<string, string>)[path];
+  if (target && (request.method === "GET" || request.method === "HEAD")) {
+    return new Response(null, { status: 302, headers: { location: target } });
+  }
+  return next();
+});
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
@@ -103,5 +113,5 @@ const customDomainRootMiddleware = createMiddleware().server(async ({ request, n
 
 export const startInstance = createStart(() => ({
   functionMiddleware: [],
-  requestMiddleware: [errorMiddleware, appModeMiddleware, customDomainRootMiddleware, securityHeadersMiddleware, csrfMiddleware],
+  requestMiddleware: [errorMiddleware, importedAssetsMiddleware, appModeMiddleware, customDomainRootMiddleware, securityHeadersMiddleware, csrfMiddleware],
 }));
