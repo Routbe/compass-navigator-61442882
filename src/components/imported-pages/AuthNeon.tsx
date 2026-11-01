@@ -31,6 +31,9 @@ import { withAltcha } from "@/lib/altcha-client";
 import { OtpInput } from "@/components/otp/OtpInput";
 import { redeemLoginCodeFn } from "@/lib/login-code.functions";
 import { IDENTITY_EMAIL_CONFLICT } from "@/lib/identity/link-rules";
+import { AUTH_UNAVAILABLE_TEXT, type AuthReadiness } from "@/lib/auth-readiness";
+import { useI18n } from "@/lib/i18n";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 /** Providers die via Better Auth's generic OAuth/OIDC-plugin lopen. */
 const GENERIC_OAUTH = new Set(["oidc", "infomaniak", "proton"]);
@@ -56,6 +59,7 @@ function errorMessage(error: unknown, fallback: string) {
  */
 export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode }) {
   const { t } = useTranslation();
+  const { locale } = useI18n();
   const adminPortal = Boolean(usePortalFrame()) || isAdminMode();
   const nav = useNavigate();
   const { user, refresh } = useAuth();
@@ -95,15 +99,17 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
   const [fediverse, setFediverse] = useState<"bluesky" | "mastodon" | null>(null);
   const redirected = useRef(false);
   const [enabled, setEnabled] = useState<string[] | null>(null);
+  const [readiness, setReadiness] = useState<AuthReadiness | null>(null);
+  const unavailable = readiness?.ready === false;
 
   useEffect(() => {
-    if (adminPortal) return;
     // Openbare route; faalt die, dan blijft `enabled` null en proberen we gewoon.
     fetch("/api/public/auth/providers", { credentials: "omit" })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
-      .then((body: { providers?: string[] }) =>
-        Array.isArray(body?.providers) ? setEnabled(body.providers) : null,
-      )
+      .then((body: { providers?: string[]; readiness?: AuthReadiness }) => {
+        if (Array.isArray(body?.providers)) setEnabled(body.providers);
+        if (body.readiness) setReadiness(body.readiness);
+      })
       .catch(() =>
         getEnabledProviders()
           .then((list) => setEnabled(list))
@@ -167,6 +173,7 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
 
   /** OAuth via Neon Auth — de service stuurt door naar de provider. */
   const oauth = async (provider: string) => {
+    if (unavailable) { toast.error(AUTH_UNAVAILABLE_TEXT[locale]); return; }
     if (isInactive(provider)) {
       toast.info(t("auth.provider.inactive"));
       return;
@@ -256,6 +263,7 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
   };
 
   const passkeyLogin = async () => {
+    if (unavailable) { toast.error(AUTH_UNAVAILABLE_TEXT[locale]); return; }
     setLoading(true);
     try {
       const res = await authClient.signIn.passkey();
@@ -274,6 +282,7 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
 
   // WebAuthn Conditional UI: saved passkeys appear in the e-mail field's autofill.
   useEffect(() => {
+    if (!readiness?.ready) return;
     let cancelled = false;
     const pkc = typeof window !== "undefined" ? window.PublicKeyCredential : undefined;
     if (!pkc?.isConditionalMediationAvailable) return;
@@ -292,11 +301,12 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [readiness?.ready]);
 
   /** Passwordless: Neon Auth mailt een eenmalige inloglink. */
   const continueWithEmail = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (unavailable) { toast.error(AUTH_UNAVAILABLE_TEXT[locale]); return; }
     if (!emailAccepted()) return;
     setLoading(true);
     const address = email.trim().toLowerCase();
@@ -323,6 +333,7 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
 
   const signInWithPassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (unavailable) { toast.error(AUTH_UNAVAILABLE_TEXT[locale]); return; }
     if (!emailAccepted()) return;
     setLoading(true);
     try {
@@ -351,6 +362,7 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
 
   const signUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (unavailable) { toast.error(AUTH_UNAVAILABLE_TEXT[locale]); return; }
     if (adminPortal) return;
     if (!emailAccepted()) return;
     if (password.length < MIN_PASSWORD_LENGTH) {
@@ -399,7 +411,7 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
           {emailError}
         </p>
       )}
-      <Altcha className="mt-1" />
+      {!unavailable && <Altcha className="mt-1" />}
     </div>
   );
 
@@ -421,7 +433,8 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
             <p className="text-sm text-muted-foreground">{adminPortal ? t("auth.signin") : t("auth.ui.subtitle")}</p>
           </div>
 
-          <Button type="button" onClick={() => void passkeyLogin()} disabled={loading} className="mb-3 h-11 w-full gap-2">
+          {unavailable && <Alert variant="destructive" className="mb-4"><AlertDescription>{AUTH_UNAVAILABLE_TEXT[locale]}</AlertDescription></Alert>}
+          <Button type="button" onClick={() => void passkeyLogin()} disabled={loading || unavailable} className="mb-3 h-11 w-full gap-2">
             <KeyRound className="h-4 w-4" /> {t("auth.passkey")}
           </Button>
 
@@ -440,7 +453,7 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
                   }
                   void oauth(tile.id);
                 }}
-                disabled={loading || connecting !== null}
+                disabled={loading || unavailable || connecting !== null || isInactive(tile.id)}
                 aria-busy={connecting === tile.id}
                 aria-label={t("auth.provider.continue", { name: tile.label })}
                 title={t("auth.provider.continue", { name: tile.label })}
@@ -534,7 +547,7 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
               <Button
                 type="submit"
                 className="h-11 w-full rounded-lg font-medium"
-                disabled={loading || !!emailError}
+                disabled={loading || unavailable || !!emailError}
               >
                 {loading ? (
                   <>
@@ -565,7 +578,7 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
               <Button
                 type="submit"
                 className="h-11 w-full rounded-lg font-medium"
-                disabled={loading || !!emailError}
+                disabled={loading || unavailable || !!emailError}
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("auth.ui.password.signin")}
               </Button>
@@ -598,7 +611,7 @@ export default function AuthNeon({ initialMode = "magic" }: { initialMode?: Mode
               <Button
                 type="submit"
                 className="h-11 w-full rounded-lg font-medium"
-                disabled={loading || !!emailError}
+                disabled={loading || unavailable || !!emailError}
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("auth.ui.signup.cta")}
               </Button>

@@ -1,6 +1,8 @@
 // Guarded auth endpoint: missing provider credentials fail fast with a readable
 // code instead of a generic 500 (see handleAuthRequest below).
 import { createFileRoute } from "@tanstack/react-router";
+import { authConfigurationReadiness, AUTH_UNAVAILABLE_TEXT } from "@/lib/auth-readiness";
+import { logServerError } from "@/lib/security/safe-errors";
 
 /**
  * ROUT's own auth endpoint (self-hosted Better Auth). Sign-up, sign-in,
@@ -83,7 +85,7 @@ function traceContext(request: Request, relativePath?: string) {
   const cookieNames = (request.headers.get("cookie") ?? "")
     .split(";")
     .map((c) => c.split("=")[0]?.trim())
-    .filter((n): n is string => Boolean(n) && /auth|state|session/i.test(n!));
+    .filter((n): n is string => typeof n === "string" && Boolean(n) && /auth|state|session/i.test(n));
   return {
     method: request.method,
     path: relativePath ?? url.pathname,
@@ -100,7 +102,7 @@ function traceContext(request: Request, relativePath?: string) {
 
 export async function handleAuthRequest({ request }: { request: Request }) {
   try {
-    const { createRoutAuth, isProviderConfigured, missingProviderKeys } = await import("@/lib/better-auth.server");
+    const { createRoutAuth, isProviderConfigured, missingProviderKeys, resolveAuthSecret } = await import("@/lib/better-auth.server");
 
     // A provider without credentials must never reach Better Auth: it would
     // throw and surface as a generic 500. Fail fast with a readable code so
@@ -125,6 +127,15 @@ export async function handleAuthRequest({ request }: { request: Request }) {
     if (provider && !isProviderConfigured(provider)) {
       return providerNotConfigured(provider, missingProviderKeys(provider));
     }
+
+    // Configuration failures must precede mail, database-backed challenges and
+    // passkeys. Never pretend that retrying a challenge can restore configuration.
+    const { hasDatabase } = await import("@/lib/neon");
+    const readiness = authConfigurationReadiness(hasDatabase(), Boolean(resolveAuthSecret()));
+    if (!readiness.ready) return Response.json(
+      { code: readiness.code, message: AUTH_UNAVAILABLE_TEXT.nl },
+      { status: 503, headers: { "cache-control": "no-store" } },
+    );
 
     if (appMode() === "admin" && request.method === "POST" && ALTCHA_PATHS.has(relativePath)) {
       let email: unknown;
@@ -170,8 +181,7 @@ export async function handleAuthRequest({ request }: { request: Request }) {
       // Better Auth reports most failures as an error response, not a throw:
       // log the exact payload server-side instead of only a bare status code.
       try {
-        const body = await res.clone().text();
-        console.error("[BetterAuth Error]:", { status: res.status, body: body.slice(0, 2000), ...traceContext(request, relativePath) });
+        console.error("[BetterAuth Error]:", { status: res.status, ...traceContext(request, relativePath) });
       } catch {
         /* a body-read failure must never break the response */
       }
@@ -200,13 +210,10 @@ export async function handleAuthRequest({ request }: { request: Request }) {
     }
     return res;
   } catch (err) {
-    console.error("[BetterAuth Error]:", err);
+    logServerError("auth-handler", err);
     const raw = err instanceof Error ? err.message : String(err);
     console.error("[auth] handler failed:", {
-      message: raw,
       name: err instanceof Error ? err.name : typeof err,
-      cause: err instanceof Error && err.cause ? String((err.cause as Error)?.message ?? err.cause) : undefined,
-      stack: err instanceof Error ? err.stack : undefined,
       ...traceContext(request),
     });
     const code = /interactive_transactions_unsupported|runtime_role_unsafe/.test(raw)
@@ -223,7 +230,7 @@ export async function handleAuthRequest({ request }: { request: Request }) {
               ? "db_error"
               : "auth_error";
     if (code === "provider_not_configured") {
-      console.warn("[auth] provider not configured (thrown by handler):", raw);
+      console.warn("[auth] provider not configured (thrown by handler)");
     }
     const message = {
       database_safety_blocked: "Inloggen is tijdelijk niet beschikbaar: de veilige databaseverbinding is nog niet gereed.",
