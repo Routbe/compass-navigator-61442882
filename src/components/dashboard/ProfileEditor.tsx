@@ -790,7 +790,7 @@ export function ProfileEditor({ variant = "verified", pageMode = "profile", onPa
   // Top clicked components: proportional estimate over total scans, ranked by position
   // until per-block click tracking ships. Purely presentational, no fabricated identities.
   const topClicked = useMemo(() => {
-    const visible = blocks.filter((b) => !b.hidden && b.value);
+    const visible = blocks.filter((b) => b && !b.hidden && b.value);
     if (!visible.length || !stats?.scans) return [];
     const weights = visible.map((_, i) => visible.length - i);
     const totalWeight = weights.reduce((a, b) => a + b, 0);
@@ -1276,7 +1276,7 @@ export function ProfileEditor({ variant = "verified", pageMode = "profile", onPa
                   {[
                     { label: t("studio.editor.dynamicQr"), value: stats.qrs },
                     { label: t("studio.editor.scans"), value: stats.scans },
-                    { label: t("studio.editor.components"), value: blocks.filter((b) => !b.hidden).length },
+                    { label: t("studio.editor.components"), value: blocks.filter((b) => b && !b.hidden).length },
                   ].map((s) => (
                     <div key={s.label} className="rounded-xl border border-border p-3">
                       <p className="text-2xl font-medium">{s.value}</p>

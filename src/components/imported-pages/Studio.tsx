@@ -63,7 +63,10 @@ export default function Studio() {
   const ctxFn = useServerFn(getWorkspaceContext);
   const wsCtx = useQuery({ queryKey: ["workspace-context"], queryFn: () => ctxFn(), enabled: Boolean(user), retry: false });
   const ctxData = wsCtx.data;
-  const activeWorkspace = ctxData?.available && ctxData.activeWorkspaceId ? ctxData.workspaces.find((w) => w.id === ctxData.activeWorkspaceId) : undefined;
+  const workspaceList = ctxData?.available && Array.isArray(ctxData.workspaces) ? ctxData.workspaces : [];
+  const activeWorkspace = ctxData?.activeWorkspaceId
+    ? workspaceList.find((w) => w && w.id === ctxData.activeWorkspaceId)
+    : undefined;
   useEffect(() => {
     if (activeWorkspace) nav(`/studio/w/${encodeURIComponent(activeWorkspace.slug)}/hub`, { replace: true });
   }, [activeWorkspace, nav]);
