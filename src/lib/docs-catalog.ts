@@ -41,7 +41,7 @@ export function docHead(path: string) {
   const doc = getDoc(path);
   const title = doc?.seo_title ?? `${doc?.title ?? "Documentatie"} — ROUT`;
   const description = doc?.seo_description ?? doc?.description ?? "ROUT-documentatie";
-  return { meta: [{ title }, { name: "description", content: description }, { property: "og:title", content: title }, { property: "og:description", content: description }, { property: "og:type", content: "article" }, { name: "twitter:card", content: "summary" }, ...(doc?.seo_keywords ? [{ name: "keywords", content: doc.seo_keywords.join(", ") }] : [])], links: [canonicalLink(path)], scripts: doc?.schema_type ? [{ type: "application/ld+json", children: JSON.stringify(docStructuredData(doc)).replace(/</g, "\\u003c") }] : [] };
+  return { meta: [{ title }, { name: "description", content: description }, { property: "og:title", content: title }, { property: "og:description", content: description }, { property: "og:type", content: "article" }, { property: "og:url", content: `${SITE_ORIGIN}${path}` }, { name: "twitter:card", content: "summary" }, ...(doc?.seo_keywords ? [{ name: "keywords", content: doc.seo_keywords.join(", ") }] : [])], links: [canonicalLink(path)], scripts: doc ? [{ type: "application/ld+json", children: JSON.stringify(docStructuredData(doc)).replace(/</g, "\\u003c") }] : [] };
 }
 
 export function docStructuredData(doc: DocEntry) {
