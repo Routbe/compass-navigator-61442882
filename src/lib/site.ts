@@ -50,7 +50,7 @@ export const BRAND_MARK_URLS = {
 } as const;
 
 /** QR type illustrations (absolute, production-hosted). */
-export const qrTypeImageUrl = (name: string) => brandAsset(`/img/${name}`);
+export const qrTypeImageUrl = (name: string) => `${SITE_ORIGIN}/img/${name}`;
 
 /** Self-referencing canonical link for a static route path (`/`, `/claim`, …). */
 export const canonicalLink = (path: string) => ({
