@@ -1,12 +1,12 @@
 import { z } from "zod";
+import { bioAssistanceInput } from "./bio-assistance";
 export const bioLocaleSchema = z.enum(["nl", "en", "fr", "de"]);
 export const bioDescriptionsSchema = z.strictObject({
   nl: z.string().max(1000), en: z.string().max(1000),
   fr: z.string().max(1000), de: z.string().max(1000),
 });
 export type BioDescriptions = z.infer<typeof bioDescriptionsSchema>;
-export const translateBioSchema = z.strictObject({
-  text: z.string().max(1000).refine((v) => v.trim().length > 0, "Bio is required"),
+export const bioEditorInput = bioAssistanceInput.extend({
   sourceLocale: bioLocaleSchema.optional(),
   variant: z.enum(["verified", "alias"]).default("verified"),
 });
