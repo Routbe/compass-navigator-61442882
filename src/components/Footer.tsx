@@ -35,22 +35,20 @@ const INFRASTRUCTURE = [
   { to: "/console", label: "Developer Console" },
   { to: "/developers", label: "Developer docs" },
   { to: "/self-hosting", label: "Self-hosting guide" },
+];
+
+const ECOSYSTEM = [
+  { to: "/explore", label: "Explore profiles" },
+  { to: "/manifesto", label: "Manifesto" },
+  { to: "/press", label: "Press & brand kit" },
   { href: GITHUB_REPO, label: "GitHub repository" },
 ];
 
 const SUPPORT = [
-  { to: "/about", label: "De missie" },
-  { to: "/info", label: "ROUT gebruiken" },
-  { to: "/dev", label: "Developer Portal" },
-  { to: "/safety", label: "Trust & Safety" },
   { to: "/contact", label: "Contact form" },
   { to: "/sovereignty", label: "Sovereignty" },
   { to: "/privacy", label: "Privacy policy" },
-  { to: "/manifesto", label: "Manifesto" },
-  { to: "/explore", label: "Explore profiles" },
-  { to: "/press", label: "Press & brand kit" },
   { to: "/terms", label: "Terms" },
-  { to: "/data-deletion", label: "Data deletion" },
 ];
 
 const AUTH_ROUTES = new Set(["/auth", "/login"]);
