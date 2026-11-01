@@ -18,3 +18,5 @@
 - Bio assistance uses pure browser-safe helpers and updates the Studio draft through its existing callback; only the existing explicit persistence path saves data, so formatting never writes automatically or fabricates translated text.
 - Contact triage remains deterministic behind the existing staff permission boundary; local helpers and tests must not depend on external AI SDKs or provider credentials.
 - Authentication configuration readiness is checked before challenges, mail and passkeys, and shared with the sign-in UI; this detects missing configuration without replacing Better Auth or bypassing its safety checks.
+- Static images and icons stay as real files in `public/` and `src/assets/`, not externalized pointers. Why: the app is also deployed outside Lovable (Vercel), where Lovable-hosted asset paths do not exist.
+- Deferred `sql` queries capture the database context at creation time (`src/lib/neon.ts`). Why: `withDbContext(ctx, () => sql\`...\`)` is awaited after the context ends; losing it broke the post-sign-in account link.
