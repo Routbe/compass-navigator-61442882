@@ -52,6 +52,12 @@ afterEach(() => {
 });
 
 describe("auth handler with missing OAuth credentials", () => {
+  it("reports missing account database before requesting an email security proof", async () => {
+    clearEnv();
+    const res = await call(post("/api/auth/sign-in/magic-link", { email: "someone@example.com" }));
+    expect(res.status).toBe(503);
+    expect(await res.json()).toMatchObject({ code: "missing_database" });
+  }, 30_000);
   it("refuses social sign-in with provider_not_configured (400) and warns with the provider name", async () => {
     clearEnv();
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});

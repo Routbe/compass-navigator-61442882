@@ -1,4 +1,4 @@
-import { BioTranslator } from "./BioTranslator";
+import { BioAssistant } from "./BioAssistant";
 import { StudioSectionIcon } from "./StudioSectionIcon";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -238,7 +238,7 @@ export function ProfileBasicInfoAccordion({
                   className="input-field rounded-xl"
                   aria-label={t("studio.basic.bio")}
                 />
-                <BioTranslator text={tagline} variant={variant} />
+                <BioAssistant text={tagline} onApply={onTaglineChange} maxLength={MAX_BIO} />
                 <div className="flex flex-wrap items-center gap-1.5">
                   <button
                     type="button"

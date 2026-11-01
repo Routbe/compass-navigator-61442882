@@ -44,7 +44,7 @@ const NEXT_STEPS: Record<ContactCategory, string> = {
 };
 
 function normalize(text: string): string {
-  return ` ${text.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ")} `;
+  return ` ${text.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[’‘]/g, "'").toLowerCase().replace(/\s+/g, " ")} `;
 }
 function hits(haystack: string, words: string[]): string[] {
   const found = new Set<string>();
@@ -67,15 +67,17 @@ export function summarizeContact(message: string): string {
 }
 
 export function triageContact(message: string): ContactTriage {
+  message = contactTriageInput.parse({ message }).message;
   const text = normalize(message);
   const scores = (Object.keys(KEYWORDS) as (keyof typeof KEYWORDS)[]).map((category) => ({
     category,
     matched: hits(text, KEYWORDS[category]),
   }));
-  const security = scores.find((s) => s.category === "Veiligheid")!;
+  const security = scores.find((s) => s.category === "Veiligheid");
   // Tie order: Bug > Support > Sales.
   const ranked = scores.filter((s) => s.category !== "Veiligheid").sort((a, b) => b.matched.length - a.matched.length);
-  const best = security.matched.length ? security : ranked[0]!.matched.length ? ranked[0]! : null;
+  const first = ranked[0];
+  const best = security?.matched.length ? security : first?.matched.length ? first : null;
   const category: ContactCategory = best ? best.category : "Algemeen";
 
   const urgent = hits(text, URGENT);
