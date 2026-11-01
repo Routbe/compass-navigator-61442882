@@ -8,3 +8,9 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+## Repository import
+- Preserve the imported ROUT source structure, route handlers and design; this is a source import, not a website capture.
+- Keep the managed TanStack Start and Cloudflare configuration; MDX catalog plugins are required by the imported documentation.
+- Retain the imported Better Auth cookie-session architecture until explicitly migrated; Cloud connection alone does not configure the original database or external services.
+- Do not apply imported database scripts automatically; they require review against the target service and existing schema.
