@@ -26,8 +26,8 @@ export default function Studio() {
   const { t } = useTranslation();
   const { user, loading } = useAuth();
   const nav = useNavigate();
-  // Privacy Alias is the default; the verified profile is a premium tab.
-  const [variant, setVariant] = useState<ProfileVariant>("alias");
+  // Eén identiteit per lid: geverifieerde leden beheren hun geverifieerde
+  // profiel, niet-geverifieerde leden hun privacy-alias. Geen dubbele tabs.
   const [pageMode, setPageMode] = useState<PageMode>("profile");
   // Uitkomst van de Snapchat-koppeling (?snapchat=…) zichtbaar maken.
   useEffect(() => {
