@@ -157,10 +157,17 @@ const TRANSACTION_CONTROL = /^\s*(?:begin|commit|rollback|start\s+transaction|en
 
 /** Lazy query: executes when awaited, or as part of `sql.transaction([...])`. */
 class LazyQuery implements PromiseLike<Row[]> {
+  /**
+   * The RLS context is captured when the query is built, not when it is awaited:
+   * `withDbContext(ctx, () => sql\`...\`)` returns the unexecuted query and the
+   * caller awaits it after the context has already ended.
+   */
+  private readonly ctx: DbContext | undefined = dbContext.getStore();
   constructor(readonly statement: Statement) {}
   private exec?: Promise<Row[]>;
   run(): Promise<Row[]> {
-    this.exec ??= runQuery(this.statement.query, this.statement.params).then((r) => r.rows);
+    const execute = () => runQuery(this.statement.query, this.statement.params).then((r) => r.rows);
+    this.exec ??= this.ctx ? dbContext.run(this.ctx, execute) : execute();
     return this.exec;
   }
   then<A = Row[], B = never>(
