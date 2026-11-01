@@ -1,6 +1,6 @@
 import { pageCardImage } from "@/lib/page-cards";
 import { createFileRoute } from "@tanstack/react-router";
-import Page from "@/components/imported-pages/Index";
+import Page from "@/components/imported-pages/Gateway";
 import { HostProfile } from "@/components/imported-pages/HostProfile";
 import { getRequestLocale } from "@/lib/locale.functions";
 import { resolveHostProfile } from "@/lib/domain-routing.functions";

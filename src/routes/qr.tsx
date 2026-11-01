@@ -1,27 +1,16 @@
-import { createFileRoute } from "@tanstack/react-router";
-import Page from "@/components/imported-pages/Index";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 /**
- * /qr — dezelfde generator als de homepage, maar bedoeld om vanuit Studio
- * naar toe te linken: `?type=profile_hub` selecteert meteen de profielhub.
- * Zo blijft er één bron van waarheid voor QR-styling.
+ * /qr — verhuisd naar de Studio (`/studio?mode=qr`), de exclusieve plek voor
+ * creatie. Deze permanente redirect bewaart bestaande deeplinks (`?type=`,
+ * `?url=`).
  */
 export const Route = createFileRoute("/qr")({
-  head: () => ({
-    meta: [
-      { title: "QR-generator | ROUT" },
-      {
-        name: "description",
-        content: "Ontwerp je ROUT QR-code: kleuren, patronen, logo en profielhub-link.",
-      },
-      { property: "og:title", content: "QR-generator | ROUT" },
-      {
-        property: "og:description",
-        content: "Ontwerp je ROUT QR-code: kleuren, patronen, logo en profielhub-link.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
-  component: Page,
+  beforeLoad: ({ search }) => {
+    const params = new URLSearchParams({ mode: "qr" });
+    const s = search as Record<string, unknown>;
+    if (typeof s["type"] === "string") params.set("type", s["type"]);
+    if (typeof s["url"] === "string") params.set("url", s["url"]);
+    throw redirect({ href: `/studio?${params.toString()}`, statusCode: 301 });
+  },
 });
