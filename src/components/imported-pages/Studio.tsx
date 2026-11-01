@@ -133,20 +133,3 @@ export default function Studio() {
   );
 }
 
-function LockedVerifiedTab() {
-  const { t } = useTranslation();
-  return (
-    <div className="mx-auto w-full max-w-2xl space-y-6 py-6">
-      <div className="text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-border bg-muted">
-          <Lock className="h-5 w-5" aria-hidden />
-        </div>
-        <h2 className="font-display text-2xl tracking-tight">{t("studio.profile.verified")}</h2>
-        <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-          {t("studio.profile.unlock")}
-        </p>
-      </div>
-      <IdentityVerification />
-    </div>
-  );
-}
