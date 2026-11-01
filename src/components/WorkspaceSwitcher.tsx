@@ -35,7 +35,8 @@ export function useScope() {
   const [busy, setBusy] = useState(false);
 
   const available = data?.available === true;
-  const active = data?.workspaces?.find((w) => w.id === data.activeWorkspaceId) ?? null;
+  const workspaceList = Array.isArray(data?.workspaces) ? data.workspaces.filter(Boolean) : [];
+  const active = workspaceList.find((w) => w.id === data?.activeWorkspaceId) ?? null;
   const scope: Scope = active
     ? { type: "workspace", workspaceId: active.id, role: active.role as "owner" | "admin" | "member" }
     : { type: "personal", userId: null };
@@ -48,7 +49,7 @@ export function useScope() {
       await setActive({ data: { workspaceId } });
       await qc.cancelQueries();
       qc.clear();
-      const slug = data?.workspaces.find((w) => w.id === workspaceId)?.slug ?? null;
+      const slug = workspaceList.find((w) => w.id === workspaceId)?.slug ?? null;
       void navigate({ to: scopedPath(slug, featureForPath(window.location.pathname)) as never });
     } catch {
       toast.error(t("workspace.switchError"));
@@ -62,7 +63,7 @@ export function useScope() {
     void navigate({ to: "/studio/workspaces/new" });
   };
 
-  return { scope, active, workspaces: data?.workspaces ?? [], switchTo, newWorkspace, busy, available };
+  return { scope, active, workspaces: workspaceList, switchTo, newWorkspace, busy, available };
 }
 
 /** Vercel-style switcher: Personal + every workspace the user belongs to. */

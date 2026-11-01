@@ -35,22 +35,20 @@ const INFRASTRUCTURE = [
   { to: "/console", label: "Developer Console" },
   { to: "/developers", label: "Developer docs" },
   { to: "/self-hosting", label: "Self-hosting guide" },
+];
+
+const ECOSYSTEM = [
+  { to: "/explore", label: "Explore profiles" },
+  { to: "/manifesto", label: "Manifesto" },
+  { to: "/press", label: "Press & brand kit" },
   { href: GITHUB_REPO, label: "GitHub repository" },
 ];
 
 const SUPPORT = [
-  { to: "/about", label: "De missie" },
-  { to: "/info", label: "ROUT gebruiken" },
-  { to: "/dev", label: "Developer Portal" },
-  { to: "/safety", label: "Trust & Safety" },
   { to: "/contact", label: "Contact form" },
   { to: "/sovereignty", label: "Sovereignty" },
   { to: "/privacy", label: "Privacy policy" },
-  { to: "/manifesto", label: "Manifesto" },
-  { to: "/explore", label: "Explore profiles" },
-  { to: "/press", label: "Press & brand kit" },
   { to: "/terms", label: "Terms" },
-  { to: "/data-deletion", label: "Data deletion" },
 ];
 
 const AUTH_ROUTES = new Set(["/auth", "/login"]);
@@ -120,7 +118,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 grid grid-cols-2 gap-8 sm:gap-12 md:grid-cols-3">
+        <div className="mt-10 grid grid-cols-2 gap-8 sm:gap-12 md:grid-cols-4">
           <nav className="space-y-3">
             <p className={headingClass}>Platform</p>
             <ul className="space-y-1.5">
@@ -137,7 +135,20 @@ export function Footer() {
           <nav className="space-y-3">
             <p className={headingClass}>Infrastructure</p>
             <ul className="space-y-1.5">
-              {INFRASTRUCTURE.map((l) =>
+              {INFRASTRUCTURE.map((l) => (
+                <li key={l.to}>
+                  <Link to={l.to} className={linkClass}>
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <nav className="space-y-3">
+            <p className={headingClass}>Ecosystem</p>
+            <ul className="space-y-1.5">
+              {ECOSYSTEM.map((l) =>
                 "href" in l ? (
                   <li key={l.label}>
                     <a
@@ -160,9 +171,9 @@ export function Footer() {
             </ul>
           </nav>
 
-          <nav data-testid="footer-support-nav" className="col-span-2 space-y-3 md:col-span-1">
+          <nav data-testid="footer-support-nav" className="space-y-3">
             <p className={headingClass}>Support &amp; Legal</p>
-            <ul className="grid grid-cols-2 gap-x-8 gap-y-1.5 md:grid-cols-1">
+            <ul className="space-y-1.5">
               {SUPPORT.map((l) => (
                 <li key={l.to}>
                   <Link to={l.to} className={linkClass}>

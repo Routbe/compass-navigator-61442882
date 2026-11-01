@@ -275,6 +275,7 @@ import { Route as ApiPublicBlueskyCallbackRouteImport } from './routes/api_.publ
 import { Route as ApiPublicBlueskyClientMetadataDotjsonRouteImport } from './routes/api_.public.bluesky.client-metadata[.]json'
 import { Route as ApiPublicBlueskyStartRouteImport } from './routes/api_.public.bluesky.start'
 import { Route as ApiPublicBookingIcsIdRouteImport } from './routes/api_.public.booking-ics.$id'
+import { Route as ApiPublicContactAttachmentRouteImport } from './routes/api_.public.contact.attachment'
 import { Route as ApiPublicCronAuditCheckpointRouteImport } from './routes/api_.public.cron.audit-checkpoint'
 import { Route as ApiPublicCronAvailabilityRouteImport } from './routes/api_.public.cron.availability'
 import { Route as ApiPublicCronCheckDnsRouteImport } from './routes/api_.public.cron.check-dns'
@@ -1718,6 +1719,12 @@ const ApiPublicBookingIcsIdRoute = ApiPublicBookingIcsIdRouteImport.update({
   path: '/api/public/booking-ics/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicContactAttachmentRoute =
+  ApiPublicContactAttachmentRouteImport.update({
+    id: '/api_/public/contact/attachment',
+    path: '/api/public/contact/attachment',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronAuditCheckpointRoute =
   ApiPublicCronAuditCheckpointRouteImport.update({
     id: '/api_/public/cron/audit-checkpoint',
@@ -2322,6 +2329,7 @@ export interface FileRoutesByFullPath {
   '/api/public/bluesky/client-metadata.json': typeof ApiPublicBlueskyClientMetadataDotjsonRoute
   '/api/public/bluesky/start': typeof ApiPublicBlueskyStartRoute
   '/api/public/booking-ics/$id': typeof ApiPublicBookingIcsIdRoute
+  '/api/public/contact/attachment': typeof ApiPublicContactAttachmentRoute
   '/api/public/cron/audit-checkpoint': typeof ApiPublicCronAuditCheckpointRoute
   '/api/public/cron/availability': typeof ApiPublicCronAvailabilityRoute
   '/api/public/cron/check-dns': typeof ApiPublicCronCheckDnsRoute
@@ -2631,6 +2639,7 @@ export interface FileRoutesByTo {
   '/api/public/bluesky/client-metadata.json': typeof ApiPublicBlueskyClientMetadataDotjsonRoute
   '/api/public/bluesky/start': typeof ApiPublicBlueskyStartRoute
   '/api/public/booking-ics/$id': typeof ApiPublicBookingIcsIdRoute
+  '/api/public/contact/attachment': typeof ApiPublicContactAttachmentRoute
   '/api/public/cron/audit-checkpoint': typeof ApiPublicCronAuditCheckpointRoute
   '/api/public/cron/availability': typeof ApiPublicCronAvailabilityRoute
   '/api/public/cron/check-dns': typeof ApiPublicCronCheckDnsRoute
@@ -2959,6 +2968,7 @@ export interface FileRoutesById {
   '/api_/public/bluesky/client-metadata.json': typeof ApiPublicBlueskyClientMetadataDotjsonRoute
   '/api_/public/bluesky/start': typeof ApiPublicBlueskyStartRoute
   '/api_/public/booking-ics/$id': typeof ApiPublicBookingIcsIdRoute
+  '/api_/public/contact/attachment': typeof ApiPublicContactAttachmentRoute
   '/api_/public/cron/audit-checkpoint': typeof ApiPublicCronAuditCheckpointRoute
   '/api_/public/cron/availability': typeof ApiPublicCronAvailabilityRoute
   '/api_/public/cron/check-dns': typeof ApiPublicCronCheckDnsRoute
@@ -3287,6 +3297,7 @@ export interface FileRouteTypes {
     | '/api/public/bluesky/client-metadata.json'
     | '/api/public/bluesky/start'
     | '/api/public/booking-ics/$id'
+    | '/api/public/contact/attachment'
     | '/api/public/cron/audit-checkpoint'
     | '/api/public/cron/availability'
     | '/api/public/cron/check-dns'
@@ -3596,6 +3607,7 @@ export interface FileRouteTypes {
     | '/api/public/bluesky/client-metadata.json'
     | '/api/public/bluesky/start'
     | '/api/public/booking-ics/$id'
+    | '/api/public/contact/attachment'
     | '/api/public/cron/audit-checkpoint'
     | '/api/public/cron/availability'
     | '/api/public/cron/check-dns'
@@ -3923,6 +3935,7 @@ export interface FileRouteTypes {
     | '/api_/public/bluesky/client-metadata.json'
     | '/api_/public/bluesky/start'
     | '/api_/public/booking-ics/$id'
+    | '/api_/public/contact/attachment'
     | '/api_/public/cron/audit-checkpoint'
     | '/api_/public/cron/availability'
     | '/api_/public/cron/check-dns'
@@ -4112,6 +4125,7 @@ export interface RootRouteChildren {
   ApiPublicBlueskyClientMetadataDotjsonRoute: typeof ApiPublicBlueskyClientMetadataDotjsonRoute
   ApiPublicBlueskyStartRoute: typeof ApiPublicBlueskyStartRoute
   ApiPublicBookingIcsIdRoute: typeof ApiPublicBookingIcsIdRoute
+  ApiPublicContactAttachmentRoute: typeof ApiPublicContactAttachmentRoute
   ApiPublicCronAuditCheckpointRoute: typeof ApiPublicCronAuditCheckpointRoute
   ApiPublicCronAvailabilityRoute: typeof ApiPublicCronAvailabilityRoute
   ApiPublicCronCheckDnsRoute: typeof ApiPublicCronCheckDnsRoute
@@ -6017,6 +6031,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicBookingIcsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api_/public/contact/attachment': {
+      id: '/api_/public/contact/attachment'
+      path: '/api/public/contact/attachment'
+      fullPath: '/api/public/contact/attachment'
+      preLoaderRoute: typeof ApiPublicContactAttachmentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api_/public/cron/audit-checkpoint': {
       id: '/api_/public/cron/audit-checkpoint'
       path: '/api/public/cron/audit-checkpoint'
@@ -7115,6 +7136,7 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicBlueskyClientMetadataDotjsonRoute,
   ApiPublicBlueskyStartRoute: ApiPublicBlueskyStartRoute,
   ApiPublicBookingIcsIdRoute: ApiPublicBookingIcsIdRoute,
+  ApiPublicContactAttachmentRoute: ApiPublicContactAttachmentRoute,
   ApiPublicCronAuditCheckpointRoute: ApiPublicCronAuditCheckpointRoute,
   ApiPublicCronAvailabilityRoute: ApiPublicCronAvailabilityRoute,
   ApiPublicCronCheckDnsRoute: ApiPublicCronCheckDnsRoute,

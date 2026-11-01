@@ -16,7 +16,11 @@ const EVENT = "rout:identity-space";
 
 function read(): IdentitySpace {
   if (typeof window === "undefined") return "alias";
-  return localStorage.getItem(KEY) === "verified" ? "verified" : "alias";
+  try {
+    return localStorage.getItem(KEY) === "verified" ? "verified" : "alias";
+  } catch {
+    return "alias";
+  }
 }
 
 export function useIdentitySpace(canUseVerified = false) {
@@ -34,7 +38,11 @@ export function useIdentitySpace(canUseVerified = false) {
   }, []);
 
   const select = useCallback((next: IdentitySpace) => {
-    localStorage.setItem(KEY, next);
+    try {
+      localStorage.setItem(KEY, next);
+    } catch {
+      // Storage may be unavailable (private mode); state still updates.
+    }
     window.dispatchEvent(new Event(EVENT));
     setSpace(next);
   }, []);

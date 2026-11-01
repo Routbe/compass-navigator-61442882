@@ -2,12 +2,36 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 
+export const CONTACT_PORTAL_CATEGORIES = ["general", "business", "partner", "bug"] as const;
+export type ContactPortalCategory = (typeof CONTACT_PORTAL_CATEGORIES)[number];
+
+const attachmentSchema = z.object({
+  key: z.string().trim().min(1).max(300),
+  name: z.string().trim().min(1).max(120),
+  size: z.number().int().positive().max(5 * 1024 * 1024),
+  mime: z.enum(["image/png", "image/jpeg", "text/plain", "application/json"]),
+});
+
 const contactSchema = z.object({
   name: z.string().trim().min(1).max(100),
   email: z.string().trim().email().max(255),
   subject: z.string().trim().min(1).max(150),
   message: z.string().trim().min(1).max(2000),
   locale: z.enum(["nl", "en", "fr", "de"]).default("en"),
+  /** Portal category chosen by the visitor; seeds the local triage. */
+  category: z.enum(CONTACT_PORTAL_CATEGORIES).default("general"),
+  /** Optional ROUT @handle or workspace name. */
+  routHandle: z.string().trim().max(60).optional().default(""),
+  /** Business & workspaces. */
+  companyName: z.string().trim().max(120).optional().default(""),
+  teamSize: z.enum(["1-10", "11-50", "51-200", "200+"]).optional(),
+  /** Bug, tech & infrastructure. */
+  bugComponent: z.enum(["studio", "qr", "auth", "api", "other"]).optional(),
+  bugSeverity: z.enum(["low", "medium", "high", "critical"]).optional(),
+  /** Collaboration & partners. */
+  partnershipType: z.enum(["media", "integration", "community"]).optional(),
+  /** Optional bug attachment, already stored via /api/public/contact/attachment. */
+  attachment: attachmentSchema.optional(),
   /** Honeypot: bots fill hidden inputs, humans never see it. */
   company: z.string().max(200).optional().default(""),
   /** Proof-of-time: epoch ms of page load, set by the form on mount. */
@@ -99,8 +123,25 @@ export const submitContactMessage = createServerFn({ method: "POST" })
       submittedAt,
     };
 
+    // Local, deterministic triage (no external AI): the visitor's portal
+    // category seeds the result, keyword analysis can still escalate.
+    const { triageContact } = await import("@/lib/contact-triage");
+    let triage: { category: string; priority: string } = { category: "Algemeen", priority: "Normaal" };
+    try {
+      const result = triageContact(data.message);
+      let category = result.category;
+      if (data.category === "bug" && category === "Algemeen") category = "Bug";
+      if ((data.category === "business" || data.category === "partner") && category === "Algemeen")
+        category = "Sales";
+      let priority = result.priority;
+      if (data.bugSeverity === "critical" && priority !== "Urgent") priority = "Hoog";
+      triage = { category, priority };
+    } catch {
+      // Triage is best-effort; delivery never depends on it.
+    }
+
     console.info(
-      `[contact] step 1/3 db insert: name=${data.name.length}ch subject=${data.subject.length}ch message=${data.message.length}ch locale=${data.locale}`,
+      `[contact] step 1/3 db insert: name=${data.name.length}ch subject=${data.subject.length}ch message=${data.message.length}ch locale=${data.locale} portal=${data.category} triage=${triage.category}/${triage.priority}`,
     );
 
     const { data: row, error: insertError } = await dbAdmin
@@ -114,6 +155,21 @@ export const submitContactMessage = createServerFn({ method: "POST" })
         locale: data.locale,
         status: "pending",
         sender_hash: senderHash,
+        portal_category: data.category,
+        category: triage.category,
+        priority: triage.priority,
+        meta: {
+          routHandle: data.routHandle || null,
+          companyName: data.companyName || null,
+          teamSize: data.teamSize ?? null,
+          bugComponent: data.bugComponent ?? null,
+          bugSeverity: data.bugSeverity ?? null,
+          partnershipType: data.partnershipType ?? null,
+        },
+        attachment_key: data.attachment?.key ?? null,
+        attachment_name: data.attachment?.name ?? null,
+        attachment_size: data.attachment?.size ?? null,
+        attachment_mime: data.attachment?.mime ?? null,
       })
       .select("id")
       .single();

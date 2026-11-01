@@ -27,6 +27,8 @@ export function useUrlStyle() {
         const { urlStyle } = await getUrlStyleFn();
         if (!alive) return;
         setStyle(isUrlStyle(urlStyle) ? urlStyle : DEFAULT_URL_STYLE);
+      } catch {
+        // Failed reads fall back to the default style instead of crashing.
       } finally {
         if (alive) setLoading(false);
       }

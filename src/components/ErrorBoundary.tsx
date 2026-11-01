@@ -59,21 +59,29 @@ export class ErrorBoundary extends Component<Props, State> {
     if (typeof window !== "undefined") window.location.reload();
   };
   private resetCache = () => {
-    try {
-      if (typeof window !== "undefined") {
-        const keep = /^(sb-|db)/i;
-        const doomed: string[] = [];
-        for (let i = 0; i < window.localStorage.length; i += 1) {
-          const key = window.localStorage.key(i);
-          if (key && !keep.test(key)) doomed.push(key);
+    void (async () => {
+      try {
+        if (typeof window !== "undefined") {
+          const keep = /^(sb-|db)/i;
+          const doomed: string[] = [];
+          for (let i = 0; i < window.localStorage.length; i += 1) {
+            const key = window.localStorage.key(i);
+            if (key && !keep.test(key)) doomed.push(key);
+          }
+          doomed.forEach((key) => window.localStorage.removeItem(key));
+          window.sessionStorage.clear();
+          // Also drop cached API responses and stale chunks so a corrupt
+          // cache cannot re-trigger the same crash after reload.
+          if ("caches" in window) {
+            const names = await window.caches.keys();
+            await Promise.all(names.map((name) => window.caches.delete(name)));
+          }
         }
-        doomed.forEach((key) => window.localStorage.removeItem(key));
-        window.sessionStorage.clear();
+      } catch {
+        // best-effort cleanup; ignore storage errors
       }
-    } catch {
-      // best-effort cleanup; ignore storage errors
-    }
-    this.reload();
+      this.reload();
+    })();
   };
   override render() {
     const { error, info, detailsOpen } = this.state;
