@@ -8,7 +8,15 @@ import { ProfileSuspended } from "@/components/profile/ProfileSuspended";
 import { ProfileFrozen } from "@/components/profile/ProfileFrozen";
 import { ProfilePrivate } from "@/components/profile/ProfilePrivate";
 import { useProfileRecord } from "@/hooks/useProfileRecord";
-import { canonicalHandle } from "@/lib/profile-url";
+import {
+  canonicalHandle,
+  DEFAULT_URL_STYLE,
+  isUrlStyle,
+  rootRedirectFor,
+  styledProfilePath,
+  urlStyleForAtPreference,
+  urlStyleHasAt,
+} from "@/lib/profile-url";
 import { looksLikeBase36Slug } from "@/lib/base36";
 import { RESERVED_SLUGS } from "@/lib/reserved-slugs";
 import { ShortLinkResolver } from "@/components/imported-pages/ShortLink";
@@ -151,8 +159,12 @@ export const Route = createFileRoute("/$username")({
     const slug = (profile?.["username"] as string | undefined) ?? handle;
     const url = `https://rout.be/${slug}`;
     if (!profile) return { meta: socialMeta(locale), links: canonicalLinks(`/${slug}`) };
+    // Canonical link wijst naar de gekozen hoofd-URL (met of zonder @).
+    const rawStyle = profile["url_style"];
+    const style = isUrlStyle(rawStyle) ? rawStyle : DEFAULT_URL_STYLE;
+    const canonicalPath = styledProfilePath(slug, urlStyleForAtPreference(urlStyleHasAt(style)));
     return {
-      links: [...canonicalLinks(`/${slug}`), ...fediverseHeadLinks(profile["fediverse"] as FediverseIdentity | null)],
+      links: [...canonicalLinks(canonicalPath), ...fediverseHeadLinks(profile["fediverse"] as FediverseIdentity | null)],
       scripts:
         profile["status"] === "frozen"
           ? []
