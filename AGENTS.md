@@ -17,3 +17,4 @@
 - Subdirectories may have their own AGENTS.md; read those rules before changing their files.
 - Bio assistance uses pure browser-safe helpers and updates the Studio draft through its existing callback; only the existing explicit persistence path saves data, so formatting never writes automatically or fabricates translated text.
 - Contact triage remains deterministic behind the existing staff permission boundary; local helpers and tests must not depend on external AI SDKs or provider credentials.
+- Authentication configuration readiness is checked before challenges, mail and passkeys, and shared with the sign-in UI; this detects missing configuration without replacing Better Auth or bypassing its safety checks.
