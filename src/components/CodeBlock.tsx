@@ -11,6 +11,9 @@ interface Props {
   /** Summary title, e.g. "POST /api/public/qr/create". */
   title?: string;
   defaultOpen?: boolean;
+  /** Localised labels for the copy button. */
+  copyLabel?: string;
+  copiedLabel?: string;
 }
 
 /** Terminal-style snippet with a one-click copy affordance. */
@@ -21,6 +24,8 @@ export function CodeBlock({
   collapsible = false,
   title,
   defaultOpen = false,
+  copyLabel = "Copy",
+  copiedLabel = "Copied",
 }: Props) {
   const [copied, setCopied] = useState(false);
 
