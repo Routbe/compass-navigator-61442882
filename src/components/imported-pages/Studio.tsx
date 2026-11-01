@@ -124,7 +124,7 @@ export default function Studio() {
           <ErrorBoundary label={t("studio.page.title")} inline>
             {pageMode === "booking" && unlocked && <BookingStudioPanel />}
             <div hidden={pageMode === "booking" && unlocked}>
-              <ProfileEditor key={variant} variant={variant} pageMode={pageMode === "booking" && unlocked ? "profile" : pageMode} onPagesChange={updatePages} />
+              <ProfileEditor key={variant} variant={variant} pageMode={pageMode === "tip" && unlocked ? "tip" : "profile"} onPagesChange={updatePages} />
             </div>
           </ErrorBoundary>
         </div>
