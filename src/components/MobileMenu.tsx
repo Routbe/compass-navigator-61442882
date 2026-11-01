@@ -19,12 +19,14 @@ import { useI18n } from "@/lib/i18n";
 const itemClass =
   "flex items-start gap-3 rounded-xl px-3 py-2.5 text-sm text-foreground hover:bg-muted/60 transition-colors";
 
+// Directe routing naar de werkende tools — de informatieve SEO-landingspagina's
+// (/qr-code-generator, /product/*) blijven via sitemap en footer bereikbaar.
 const TOOLS = [
-  { to: "/qr-code-generator", label: "QR Generator", hint: "menu.generator.hint", icon: QrCode },
-  { to: "/product/profile-hub", label: "Profile Hub Studio", hint: "menu.studio.hint", icon: Palette },
-  { to: "/product/batch-engine", label: "Batch Engine", hint: "menu.batch.hint", icon: Layers },
+  { to: "/qr", label: "QR Generator", hint: "menu.generator.hint", icon: QrCode },
+  { to: "/studio", label: "Profile Hub Studio", hint: "menu.studio.hint", icon: Palette },
+  { to: "/batch", label: "Batch Engine", hint: "menu.batch.hint", icon: Layers },
   {
-    to: "/product/dynamic-links",
+    to: "/dashboard/routes",
     label: "Dynamic Links & Analytics",
     hint: "menu.links.hint",
     icon: Link2,

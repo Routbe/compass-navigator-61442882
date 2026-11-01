@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { createFileRoute, useParams } from "@tanstack/react-router";
+import { createFileRoute, redirect, useParams } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { ProfileLookupError, ProfileMissing, ProfileView } from "@/components/profile/ProfileView";
 import { InviteBanner } from "@/components/profile/InviteBanner";
@@ -15,6 +15,12 @@ import { parseDisplayPrefs, bioForLocale } from "@/lib/profile-display";
 import { sanitizeHandleInput } from "@/lib/validations/sanitizeHandle";
 import { useRecordVisit } from "@/hooks/useRecordVisit";
 import { fediverseHeadLinks, type FediverseIdentity } from "@/lib/fediverse-profile";
+import {
+  aliasRedirectFor,
+  DEFAULT_URL_STYLE,
+  isUrlStyle,
+  urlStyleHasAt,
+} from "@/lib/profile-url";
 
 type Row = Record<string, unknown> | null;
 
@@ -87,6 +93,14 @@ export const Route = createFileRoute("/u/$username")({
     } catch {
       row = null;
     }
+    if (row) {
+      // Eén hoofd-URL per identiteit: de niet-gekozen vorm (met/zonder @)
+      // stuurt permanent door naar de gekozen hoofd-URL binnen /u/.
+      const rawStyle = row["owner_url_style"];
+      const style = isUrlStyle(rawStyle) ? rawStyle : DEFAULT_URL_STYLE;
+      const target = aliasRedirectFor(params.username, style);
+      if (target) throw redirect({ href: target, statusCode: 301 });
+    }
     return { handle, locale, profile: row };
   },
   head: ({ loaderData }) => {
@@ -95,8 +109,12 @@ export const Route = createFileRoute("/u/$username")({
     const slug = (profile?.["username"] as string | undefined) ?? handle;
     const url = `https://rout.be/u/${slug}`;
     if (!profile) return { meta: socialMeta(locale), links: canonicalLinks(`/u/${slug}`) };
+    // Canonical link wijst naar de gekozen hoofd-URL (met of zonder @).
+    const rawStyle = profile["owner_url_style"];
+    const style = isUrlStyle(rawStyle) ? rawStyle : DEFAULT_URL_STYLE;
+    const canonicalPath = `/u/${urlStyleHasAt(style) ? "@" : ""}${slug}`;
     return {
-      links: [...canonicalLinks(`/u/${slug}`), ...fediverseHeadLinks(profile["fediverse"] as FediverseIdentity | null)],
+      links: [...canonicalLinks(canonicalPath), ...fediverseHeadLinks(profile["fediverse"] as FediverseIdentity | null)],
       scripts:
         profile["status"] === "frozen"
           ? []

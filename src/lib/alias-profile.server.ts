@@ -175,6 +175,7 @@ export async function readPublicAliasProfile(rawHandle: string) {
            p.verified_at as owner_verified_at,
            coalesce((to_jsonb(p) ->> 'is_paid')::boolean, false) as owner_is_paid,
            to_jsonb(p) ->> 'tier' as owner_tier,
+           to_jsonb(p) ->> 'url_style' as owner_url_style,
            iv.verification_provider::text as owner_identity_provider,
            coalesce(iv.is_verified, false) as owner_identity_verified
       from public.alias_profiles a
@@ -203,6 +204,8 @@ export async function readPublicAliasProfile(rawHandle: string) {
     is_early_believer: false,
     status: "active",
     url_style: "u",
+    // De @-voorkeur van de eigenaar stuurt de canonicalisatie binnen /u/.
+    owner_url_style: (row["owner_url_style"] as string | null) ?? "u",
     show_total_reach: false,
     total_reach_count: 0,
     social_links: [],

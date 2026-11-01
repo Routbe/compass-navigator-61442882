@@ -11,6 +11,9 @@ interface Props {
   /** Summary title, e.g. "POST /api/public/qr/create". */
   title?: string;
   defaultOpen?: boolean;
+  /** Localised labels for the copy button. */
+  copyLabel?: string;
+  copiedLabel?: string;
 }
 
 /** Terminal-style snippet with a one-click copy affordance. */
@@ -21,6 +24,8 @@ export function CodeBlock({
   collapsible = false,
   title,
   defaultOpen = false,
+  copyLabel = "Copy",
+  copiedLabel = "Copied",
 }: Props) {
   const [copied, setCopied] = useState(false);
 
@@ -51,7 +56,7 @@ export function CodeBlock({
             className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-            {copied ? "Copied" : "Copy"}
+            {copied ? copiedLabel : copyLabel}
           </button>
         </summary>
         <pre className="overflow-x-auto whitespace-pre max-w-full border-t border-border bg-neutral-900 px-4 py-3 font-mono text-xs text-neutral-100 [scrollbar-width:thin]">
@@ -72,7 +77,7 @@ export function CodeBlock({
           className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] text-neutral-400 transition-colors hover:bg-white/10 hover:text-neutral-100"
         >
           {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-          {copied ? "Copied" : "Copy"}
+          {copied ? copiedLabel : copyLabel}
         </button>
       </div>
       <pre className="max-w-full overflow-x-auto whitespace-pre rounded-b-xl p-4 font-mono text-xs text-neutral-100 [scrollbar-width:thin]">

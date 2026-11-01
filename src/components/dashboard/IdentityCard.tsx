@@ -7,11 +7,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUrlStyle } from "@/hooks/useUrlStyle";
 import { getStudioProfile } from "@/lib/studio-profile.functions";
 import {
-  URL_STYLES,
   canonicalHandle,
+  effectiveUrlStyle,
   styledProfileLabel,
   styledProfilePath,
   styledProfileUrl,
+  urlStyleForAtPreference,
+  urlStyleHasAt,
   type UrlStyle,
 } from "@/lib/profile-url";
 import { cn } from "@/lib/utils";
@@ -27,6 +29,7 @@ export function IdentityCard() {
   const { style, save } = useUrlStyle();
   const getStudioProfileFn = useServerFn(getStudioProfile);
   const [handle, setHandle] = useState<string | null>(null);
+  const [verified, setVerified] = useState(false);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -37,6 +40,7 @@ export function IdentityCard() {
       if (!alive) return;
       const value = profile?.username;
       setHandle(typeof value === "string" && value ? canonicalHandle(value) : null);
+      setVerified(Boolean(profile?.verified) && profile?.status === "active");
     })();
     return () => {
       alive = false;
@@ -99,23 +103,29 @@ export function IdentityCard() {
         </div>
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-1.5 border-t border-border pt-3">
-        {URL_STYLES.map((option) => (
-          <button
-            key={option}
-            type="button"
-            onClick={() => void pick(option)}
-            aria-pressed={option === style}
-            className={cn(
-              "rounded-full border px-2.5 py-1 font-mono text-[11px] transition-colors",
-              option === style
-                ? "border-foreground bg-foreground text-background"
-                : "border-border text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {styledProfileLabel(handle, option)}
-          </button>
-        ))}
+      <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border pt-3">
+        {([true, false] as const).map((hasAt) => {
+          const option = urlStyleForAtPreference(hasAt);
+          return (
+            <button
+              key={option}
+              type="button"
+              onClick={() => void pick(option)}
+              aria-pressed={hasAt === urlStyleHasAt(style)}
+              className={cn(
+                "rounded-full border px-2.5 py-1 font-mono text-[11px] transition-colors",
+                hasAt === urlStyleHasAt(style)
+                  ? "border-foreground bg-foreground text-background"
+                  : "border-border text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {styledProfileLabel(handle, effectiveUrlStyle(option, verified))}
+            </button>
+          );
+        })}
+        <span className="px-1 text-[11px] text-muted-foreground">
+          The other shape permanently redirects to your main URL.
+        </span>
       </div>
     </section>
   );

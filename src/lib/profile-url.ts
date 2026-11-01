@@ -1,13 +1,12 @@
 import { sanitizeHandleInput } from "@/lib/validations/sanitizeHandle";
 
 /**
- * Shared identity, flexible URL.
+ * Shared identity, one main URL.
  *
- * A handle resolves through four interchangeable shapes:
- *   rout.be/u/jona · rout.be/u/@jona · rout.be/jona · rout.be/@jona
- *
- * All four render the exact same profile — the choice below only decides which
- * shape ROUT *shows* the member (dashboard, copy button, share sheet).
+ * A member has a single verified identity and chooses whether their main URL
+ * carries the @ sign: `rout.be/@jona` or `rout.be/jona`. Every other shape
+ * (`/jona`, `/@jona`, `/u/jona`, `/u/@jona`) is canonicalised server-side with
+ * a 301 redirect to the chosen main URL — never two separate profile pages.
  */
 
 export type UrlStyle = "u" | "u_at" | "clean" | "clean_at";
@@ -72,4 +71,38 @@ export function effectiveUrlStyle(style: UrlStyle, verified: boolean): UrlStyle 
   if (style === "clean") return "u";
   if (style === "clean_at") return "u_at";
   return style;
+}
+
+/** True when the member wants the @ sign in their main URL. */
+export const urlStyleHasAt = (style: UrlStyle): boolean =>
+  style === "u_at" || style === "clean_at";
+
+/** The style to save for a member's binary with/without-@ choice. */
+export const urlStyleForAtPreference = (hasAt: boolean): UrlStyle =>
+  hasAt ? "clean_at" : "clean";
+
+const requestedHasAt = (rawUsername: string): boolean =>
+  rawUsername.startsWith("@") || rawUsername.toLowerCase().startsWith("%40");
+
+/**
+ * Canonicalisation for the verified root namespace (`rout.be/<handle>`).
+ * Returns the 301 target when the requested shape is not the member's chosen
+ * main URL, otherwise null. Only the @ preference matters here: root profiles
+ * are always verified, so the main URL is always a clean path.
+ */
+export function rootRedirectFor(rawUsername: string, style: UrlStyle): string | null {
+  const handle = canonicalHandle(rawUsername);
+  if (!handle) return null;
+  const canonical = styledProfilePath(handle, urlStyleForAtPreference(urlStyleHasAt(style)));
+  const requested = requestedHasAt(rawUsername) ? `/@${handle}` : `/${handle}`;
+  return requested === canonical ? null : canonical;
+}
+
+/** Same canonicalisation inside the free `/u/` namespace. */
+export function aliasRedirectFor(rawUsername: string, style: UrlStyle): string | null {
+  const handle = canonicalHandle(rawUsername);
+  if (!handle) return null;
+  const canonical = `/u/${urlStyleHasAt(style) ? "@" : ""}${handle}`;
+  const requested = requestedHasAt(rawUsername) ? `/u/@${handle}` : `/u/${handle}`;
+  return requested === canonical ? null : canonical;
 }

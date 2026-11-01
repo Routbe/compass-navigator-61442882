@@ -18,7 +18,14 @@ export function RoutButtonKit() {
       </Button>
     </div>
     <p className="text-sm text-muted-foreground">{mode === "login" ? "Login maakt een sessie in jouw app na de bevestigde ROUT-terugkeer." : "Connect koppelt ROUT aan een al ingelogd account in jouw app; het vervangt geen account of sessie."}</p>
-    <p className="text-sm text-muted-foreground">De code hieronder is de knop, niet de volledige login. Maak eerst de aangegeven handler en een exact geregistreerd terugkeeradres. Start nooit automatisch bij het openen van een pagina. Google en andere aanmeldmethodes hebben hun eigen implementatie nodig.</p>
-    <CodeBlock code={routButtonSnippet(mode)} language="html" />
+    <p className="text-sm text-muted-foreground">De code is de knop, niet de volledige login. Maak eerst de aangegeven handler en een exact geregistreerd terugkeeradres. Start nooit automatisch bij het openen van een pagina. Google en andere aanmeldmethodes hebben hun eigen implementatie nodig.</p>
+    <CodeBlock
+      code={routButtonSnippet(mode)}
+      language="html"
+      collapsible
+      title="Toon code — HTML-snippet"
+      copyLabel="Kopieer code"
+      copiedLabel="Gekopieerd!"
+    />
   </section>;
 }
