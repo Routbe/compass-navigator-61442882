@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { createFileRoute, useParams } from "@tanstack/react-router";
+import { createFileRoute, redirect, useParams } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { ProfileLookupError, ProfileMissing, ProfileView } from "@/components/profile/ProfileView";
 import { InviteBanner } from "@/components/profile/InviteBanner";
@@ -15,6 +15,12 @@ import { parseDisplayPrefs, bioForLocale } from "@/lib/profile-display";
 import { sanitizeHandleInput } from "@/lib/validations/sanitizeHandle";
 import { useRecordVisit } from "@/hooks/useRecordVisit";
 import { fediverseHeadLinks, type FediverseIdentity } from "@/lib/fediverse-profile";
+import {
+  aliasRedirectFor,
+  DEFAULT_URL_STYLE,
+  isUrlStyle,
+  urlStyleHasAt,
+} from "@/lib/profile-url";
 
 type Row = Record<string, unknown> | null;
 
