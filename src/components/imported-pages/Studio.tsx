@@ -60,6 +60,7 @@ export default function Studio() {
     retry: false,
   });
   const unlocked = verifiedTabUnlocked(state.data);
+  const { style: urlStyle } = useUrlStyle();
   // In workspace mode Studio means the workspace's own Profile Hub, not this person's.
   const ctxFn = useServerFn(getWorkspaceContext);
   const wsCtx = useQuery({ queryKey: ["workspace-context"], queryFn: () => ctxFn(), enabled: Boolean(user), retry: false });
@@ -76,13 +77,16 @@ export default function Studio() {
     if (!loading && !user) nav("/auth/sign-in", { replace: true });
   }, [user, loading, nav]);
 
+  const variant = unlocked ? ("verified" as const) : ("alias" as const);
+  const primaryPath = pages.handle
+    ? unlocked
+      ? styledProfilePath(pages.handle, urlStyleForAtPreference(urlStyleHasAt(urlStyle)))
+      : `/u/${pages.handle}`
+    : null;
+
   const modeIcon = (m: PageMode, Fallback: typeof Sparkles) => m === "tip" ? HeartHandshake : m === "booking" ? CalendarClock : Fallback;
   const modeLabel = (m: PageMode, fallback: string) => m === "tip" ? t("studio.mode.tip") : m === "booking" ? t("studio.nav.booking") : fallback;
   const modeSuffix = (m: PageMode) => m === "tip" ? "/tip" : m === "booking" ? "/booking" : "";
-  const tabs = [
-    { id: "alias" as ProfileVariant, label: t("studio.profile.alias"), hint: "rout.be/u/handle", Icon: Sparkles, locked: false },
-    { id: "verified" as ProfileVariant, label: t("studio.profile.verified"), hint: "rout.be/handle", Icon: BadgeCheck, locked: !unlocked },
-  ];
 
   return (
     <AppLayout
