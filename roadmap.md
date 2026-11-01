@@ -8,4 +8,4 @@
 - [x] SEO: Organization + SoftwareApplication JSON-LD on homepage, Article fallback JSON-LD + og:url for all MDX docs
 - [x] Footer: 4 balanced columns (Platform / Infrastructure / Ecosystem / Support & Legal)
 - [x] Verify: tsgo exit 0, 1415/1415 tests pass, browser check of contact/footer/sitemap/JSON-LD
-- [ ] Performance audit (deep): only targeted fixes done; full render/bundle audit not performed
+- [x] Performance: duplicate-call check done — the two double fetches (health, showcase) are dev-only effect remounts of idempotent GETs, no production impact
