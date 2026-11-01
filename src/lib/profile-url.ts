@@ -1,13 +1,12 @@
 import { sanitizeHandleInput } from "@/lib/validations/sanitizeHandle";
 
 /**
- * Shared identity, flexible URL.
+ * Shared identity, one main URL.
  *
- * A handle resolves through four interchangeable shapes:
- *   rout.be/u/jona · rout.be/u/@jona · rout.be/jona · rout.be/@jona
- *
- * All four render the exact same profile — the choice below only decides which
- * shape ROUT *shows* the member (dashboard, copy button, share sheet).
+ * A member has a single verified identity and chooses whether their main URL
+ * carries the @ sign: `rout.be/@jona` or `rout.be/jona`. Every other shape
+ * (`/jona`, `/@jona`, `/u/jona`, `/u/@jona`) is canonicalised server-side with
+ * a 301 redirect to the chosen main URL — never two separate profile pages.
  */
 
 export type UrlStyle = "u" | "u_at" | "clean" | "clean_at";
