@@ -133,7 +133,13 @@ export const Route = createFileRoute("/$username")({
     } catch {
       row = null;
     }
-    if (!row) {
+    if (row) {
+      // Eén hoofd-URL per identiteit: de niet-gekozen vorm (met/zonder @)
+      // stuurt permanent door naar de gekozen hoofd-URL.
+      const style = isUrlStyle(row["url_style"]) ? row["url_style"] : DEFAULT_URL_STYLE;
+      const target = rootRedirectFor(params.username, style);
+      if (target) throw redirect({ href: target, statusCode: 301 });
+    } else {
       const wsSlug = await resolveWorkspaceRootAlias({ data: { handle } }).catch(() => null);
       if (wsSlug) throw redirect({ to: "/w/$slug", params: { slug: wsSlug }, statusCode: 301 });
     }
