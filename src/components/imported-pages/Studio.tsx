@@ -96,7 +96,7 @@ export default function Studio() {
       crumbs={[{ label: "Studio" }]}
       trustBadges
     >
-      {loading || !user || activeWorkspace ? (
+      {loading || !user || activeWorkspace || state.isLoading ? (
         <div className="flex min-h-[40vh] items-center justify-center">
           <div className="relative h-24 w-24">
             <BrandLoader label={t("studio.studio.loading")} />
@@ -105,38 +105,27 @@ export default function Studio() {
       ) : (
         <div className="relative flex flex-1 flex-col space-y-6 pb-8">
           <FirstUseTour area="studio" userId={user.id} />
+          {/* Eén identiteit: de gekozen hoofd-URL, geen naast elkaar staande
+              profielvarianten. */}
           <div data-tour="studio-pages" className="!mt-0 flex flex-nowrap gap-1 rounded-full bg-transparent p-0.5 pr-7 md:flex-wrap md:gap-2 md:p-1">
-            {tabs.map(({ id, label, hint, Icon, locked }) => {
-              const selected = variant === id;
-              const select = () => { setVariant(id); setPageMode("profile"); };
-              const trigger = <Button variant="ghost" type="button" aria-pressed={selected} onClick={select} className={`h-9 min-w-0 flex-1 md:h-auto md:min-h-12 justify-start gap-2 whitespace-normal rounded-lg px-3 py-2 text-left shadow-none ${selected ? "bg-foreground text-background hover:bg-foreground hover:text-background" : "bg-transparent text-muted-foreground hover:bg-secondary/60 hover:text-foreground"}`}>
-                <Icon className="size-4 shrink-0" />
-                <span className="min-w-0 flex-1"><span className="block text-sm font-medium">{label}</span><span className="hidden break-all font-mono text-xs opacity-70 md:block">{selected && pages.handle ? `rout.be/${id === "alias" ? "u/" : ""}${pages.handle}` : hint}</span></span>
-                {locked && <Lock className="size-3.5 shrink-0" aria-label={t("studio.common.locked")} />}
-              </Button>;
-              if (!selected || id !== "verified") return <div key={id} className="flex min-w-0 flex-1">{trigger}</div>;
-              return <DropdownMenu key={id}><DropdownMenuTrigger asChild><Button variant="ghost" aria-label={t("studio.mode.pages")} className="h-9 min-w-0 flex-1 md:h-auto md:min-h-12 justify-start gap-2 whitespace-normal rounded-lg bg-foreground px-3 py-2 text-left text-background hover:bg-foreground hover:text-background">
-                {(() => { const M = modeIcon(pageMode, Icon); return <M className="size-4 shrink-0" />; })()}<span className="min-w-0 flex-1"><span className="block text-sm font-medium">{modeLabel(pageMode, label)}</span><span className="hidden break-all font-mono text-xs opacity-70 md:block">rout.be/{pages.handle}{modeSuffix(pageMode)}</span></span><ChevronDown className="size-4 shrink-0" />
+            {unlocked ? (
+              <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" aria-label={t("studio.mode.pages")} className="h-9 min-w-0 flex-1 md:h-auto md:min-h-12 justify-start gap-2 whitespace-normal rounded-lg bg-foreground px-3 py-2 text-left text-background hover:bg-foreground hover:text-background">
+                {(() => { const M = modeIcon(pageMode, BadgeCheck); return <M className="size-4 shrink-0" />; })()}<span className="min-w-0 flex-1"><span className="block text-sm font-medium">{modeLabel(pageMode, t("studio.profile.verified"))}</span><span className="hidden break-all font-mono text-xs opacity-70 md:block">rout.be{primaryPath ?? "/handle"}{modeSuffix(pageMode)}</span></span><ChevronDown className="size-4 shrink-0" />
               </Button></DropdownMenuTrigger><DropdownMenuContent align="start" className="w-72 max-w-[calc(100vw-24px)]">
                 {(["profile", "tip", "booking"] as const).filter(mode => mode !== "tip" || pages.tipEnabled).map(mode => { const M = modeIcon(mode, BadgeCheck); return <DropdownMenuItem key={mode} onSelect={() => setPageMode(mode)}><M className="size-4" /><span className="flex-1">{modeLabel(mode, t("studio.mode.profile"))}</span>{pageMode === mode && <Check className="size-4" />}</DropdownMenuItem>; })}
-              </DropdownMenuContent></DropdownMenu>;
-            })}
+              </DropdownMenuContent></DropdownMenu>
+            ) : (
+              <div className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-lg bg-foreground px-3 py-2 text-left text-background md:h-auto md:min-h-12">
+                <Sparkles className="size-4 shrink-0" />
+                <span className="min-w-0 flex-1"><span className="block text-sm font-medium">{t("studio.profile.alias")}</span><span className="hidden break-all font-mono text-xs opacity-70 md:block">{primaryPath ? `rout.be${primaryPath}` : "rout.be/u/handle"}</span></span>
+              </div>
+            )}
           </div>
           <ErrorBoundary label={t("studio.page.title")} inline>
-            {variant === "verified" && !unlocked ? (
-              state.isLoading ? (
-                <p className="text-sm text-muted-foreground">{t("studio.common.loading")}</p>
-              ) : (
-                <LockedVerifiedTab />
-              )
-            ) : (
-              <>
-                {pageMode === "booking" && <BookingStudioPanel />}
-                <div hidden={pageMode === "booking"}>
-                  <ProfileEditor key={variant} variant={variant} pageMode={pageMode === "booking" ? "profile" : pageMode} onPagesChange={updatePages} />
-                </div>
-              </>
-            )}
+            {pageMode === "booking" && unlocked && <BookingStudioPanel />}
+            <div hidden={pageMode === "booking" && unlocked}>
+              <ProfileEditor key={variant} variant={variant} pageMode={pageMode === "booking" && unlocked ? "profile" : pageMode} onPagesChange={updatePages} />
+            </div>
           </ErrorBoundary>
         </div>
       )}
