@@ -118,7 +118,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 grid grid-cols-2 gap-8 sm:gap-12 md:grid-cols-3">
+        <div className="mt-10 grid grid-cols-2 gap-8 sm:gap-12 md:grid-cols-4">
           <nav className="space-y-3">
             <p className={headingClass}>Platform</p>
             <ul className="space-y-1.5">
@@ -135,7 +135,20 @@ export function Footer() {
           <nav className="space-y-3">
             <p className={headingClass}>Infrastructure</p>
             <ul className="space-y-1.5">
-              {INFRASTRUCTURE.map((l) =>
+              {INFRASTRUCTURE.map((l) => (
+                <li key={l.to}>
+                  <Link to={l.to} className={linkClass}>
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <nav className="space-y-3">
+            <p className={headingClass}>Ecosystem</p>
+            <ul className="space-y-1.5">
+              {ECOSYSTEM.map((l) =>
                 "href" in l ? (
                   <li key={l.label}>
                     <a
@@ -158,9 +171,9 @@ export function Footer() {
             </ul>
           </nav>
 
-          <nav data-testid="footer-support-nav" className="col-span-2 space-y-3 md:col-span-1">
+          <nav data-testid="footer-support-nav" className="space-y-3">
             <p className={headingClass}>Support &amp; Legal</p>
-            <ul className="grid grid-cols-2 gap-x-8 gap-y-1.5 md:grid-cols-1">
+            <ul className="space-y-1.5">
               {SUPPORT.map((l) => (
                 <li key={l.to}>
                   <Link to={l.to} className={linkClass}>
