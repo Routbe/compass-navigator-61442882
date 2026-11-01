@@ -7,11 +7,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUrlStyle } from "@/hooks/useUrlStyle";
 import { getStudioProfile } from "@/lib/studio-profile.functions";
 import {
-  URL_STYLES,
   canonicalHandle,
+  effectiveUrlStyle,
   styledProfileLabel,
   styledProfilePath,
   styledProfileUrl,
+  urlStyleForAtPreference,
+  urlStyleHasAt,
   type UrlStyle,
 } from "@/lib/profile-url";
 import { cn } from "@/lib/utils";
@@ -27,6 +29,7 @@ export function IdentityCard() {
   const { style, save } = useUrlStyle();
   const getStudioProfileFn = useServerFn(getStudioProfile);
   const [handle, setHandle] = useState<string | null>(null);
+  const [verified, setVerified] = useState(false);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -37,6 +40,7 @@ export function IdentityCard() {
       if (!alive) return;
       const value = profile?.username;
       setHandle(typeof value === "string" && value ? canonicalHandle(value) : null);
+      setVerified(Boolean(profile?.verified) && profile?.status === "active");
     })();
     return () => {
       alive = false;
