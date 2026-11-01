@@ -2,12 +2,36 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 
+export const CONTACT_PORTAL_CATEGORIES = ["general", "business", "partner", "bug"] as const;
+export type ContactPortalCategory = (typeof CONTACT_PORTAL_CATEGORIES)[number];
+
+const attachmentSchema = z.object({
+  key: z.string().trim().min(1).max(300),
+  name: z.string().trim().min(1).max(120),
+  size: z.number().int().positive().max(5 * 1024 * 1024),
+  mime: z.enum(["image/png", "image/jpeg", "text/plain", "application/json"]),
+});
+
 const contactSchema = z.object({
   name: z.string().trim().min(1).max(100),
   email: z.string().trim().email().max(255),
   subject: z.string().trim().min(1).max(150),
   message: z.string().trim().min(1).max(2000),
   locale: z.enum(["nl", "en", "fr", "de"]).default("en"),
+  /** Portal category chosen by the visitor; seeds the local triage. */
+  category: z.enum(CONTACT_PORTAL_CATEGORIES).default("general"),
+  /** Optional ROUT @handle or workspace name. */
+  routHandle: z.string().trim().max(60).optional().default(""),
+  /** Business & workspaces. */
+  companyName: z.string().trim().max(120).optional().default(""),
+  teamSize: z.enum(["1-10", "11-50", "51-200", "200+"]).optional(),
+  /** Bug, tech & infrastructure. */
+  bugComponent: z.enum(["studio", "qr", "auth", "api", "other"]).optional(),
+  bugSeverity: z.enum(["low", "medium", "high", "critical"]).optional(),
+  /** Collaboration & partners. */
+  partnershipType: z.enum(["media", "integration", "community"]).optional(),
+  /** Optional bug attachment, already stored via /api/public/contact/attachment. */
+  attachment: attachmentSchema.optional(),
   /** Honeypot: bots fill hidden inputs, humans never see it. */
   company: z.string().max(200).optional().default(""),
   /** Proof-of-time: epoch ms of page load, set by the form on mount. */
