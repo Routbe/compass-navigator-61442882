@@ -21,7 +21,6 @@ export function ContactTriagePanel({ initialMessage = "" }: { initialMessage?: s
     try {
       const response = await analyze({ data: input.data });
       if (response.ok) setResult(response.result);
-      else setError(response.error);
     } catch { setError("De analyse is niet beschikbaar. Controleer je supportrechten en probeer opnieuw."); }
     finally { setBusy(false); }
   };
